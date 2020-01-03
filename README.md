@@ -5,3 +5,6 @@ This page prepared by Longchuan Yaoyu LCD Display Energy Meter LCD Demo Board HT
 
 https://www.yaoyulcd.com/
 
+![alt text](https://www.yaoyulcd.com/img/Energymeter_LCD_Display.gif)
+
+

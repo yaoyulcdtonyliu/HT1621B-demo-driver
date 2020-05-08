@@ -21,15 +21,27 @@
 #define  Sys_en     0x02 
 #define  CTRl_cmd   0x80
 #define  Data_cmd   0xa0   
+
+int i;
+int j;
+int b;
+int stemp;
+
+int analogPin1 = A3;
+int analogPin2 = A2;
+int vala = 0;  // variable to store the value read
+int valb = 0;  // variable to store the value read
+
+
+
+//                    0    1    2    3    4    5    6    7    8    9  DEL  
+const char numbers[]={0X7E,0X30,0X6D,0X79,0X33,0X5B,0X5F,0X70,0X7F,0X7B,0X00,};
+
+//                    D4   D5   D6   D7   D8   D9  D10  D11  D12
+const char addreses[]={0x00,0x02,0x04,0x06,0x08,0x0A,0x0C,0x0E,0x10};
+
  
- 
-/*0,1,2,3,4,5,6,7,8,9,A,b,C,c,d,E,F,H,h,L,n,N,o,P,r,t,U,-, ,*/
-const char num[]={0x7D,0x60,0x3E,0x7A,0x63,0x5B,0x5F,0x70,0x7F,0x7B,0x77,0x4F,0x1D,0x0E,0x6E,0x1F,0x17,0x67,0x47,0x0D,0x46,0x75,0x37,0x06,0x0F,0x6D,0x02,0x00,};
-char dispnum[6]={0x00,0x00,0x00,0x00,0x00,0x00};
- 
- 
-void SendBit_1621(uchar sdata,uchar cnt)
-{
+void SendBit_1621(uchar sdata,uchar cnt){
   uchar i;
   for(i=0;i<cnt;i++)
   {
@@ -40,17 +52,13 @@ void SendBit_1621(uchar sdata,uchar cnt)
     sdata<<=1;
   }
 }
- 
-void SendCmd_1621(uchar command)
-{
+void SendCmd_1621(uchar command){
   CS0;
   SendBit_1621(0x80,4);
   SendBit_1621(command,8);
   CS1;
 }
- 
-void Write_1621(uchar addr,uchar sdata)
-{
+void Write_1621(uchar addr,uchar sdata){
   addr<<=2;
   CS0;
   SendBit_1621(0xa0,3);
@@ -58,9 +66,7 @@ void Write_1621(uchar addr,uchar sdata)
   SendBit_1621(sdata,8);
   CS1;
 }
- 
-void HT1621_all_off(uchar num)
-{
+void HT1621_all_off(uchar num){
   uchar i;
   uchar addr=0;
   for(i=0;i<num;i++)
@@ -69,9 +75,7 @@ void HT1621_all_off(uchar num)
     addr+=2;
   }
 }
- 
-void HT1621_all_on(uchar num)
-{
+void HT1621_all_on(uchar num){
   uchar i;
   uchar addr=0;
   for(i=0;i<num;i++)
@@ -80,37 +84,13 @@ void HT1621_all_on(uchar num)
     addr+=2;
   }
 }
- 
-void Init_1621(void)
-{
+void Init_1621(void){
   SendCmd_1621(Sys_en);
   SendCmd_1621(RCosc);
   SendCmd_1621(ComMode);
   SendCmd_1621(LCD_on);
 }
- 
-void displaydata(int p)
-{
-  uchar i=0;
-  switch(p)
-  {
-    case 1:
-    sbi(dispnum[0],7);
-    break;
-    case 2:
-    sbi(dispnum[1],7);
-    break;
-    case 3:
-    sbi(dispnum[2],7);
-    break;
-    default:break;
-  }
-  for(i=0;i<=5;i++)
-  {
-    Write_1621(i*2,dispnum[i]);
-  }
-}
- 
+
  
  
 void setup() {
@@ -126,38 +106,60 @@ void setup() {
   delay(1000);
   HT1621_all_off(16);
   delay(1000);
- 
-  displaydata(1);//light on the first decimal point starting from the right side
-  dispnum[5]=num[5];
-  dispnum[4]=num[4];
-  dispnum[3]=num[3];
-  dispnum[2]=num[2];
-  dispnum[1]=num[1];
-  dispnum[0]=num[0];
- 
-  sbi(dispnum[5],7);
-  //cbi(dispnum[5],7);
-  sbi(dispnum[4],7);
-  //cbi(dispnum[4],7); 
-  sbi(dispnum[3],7);
-  //cbi(dispnum[3],7); 
- 
- 
- 
-  //Write_1621(0,num[0]);  //0
-  //Write_1621(2,num[1]);  //1
-  //Write_1621(4,num[2]);  //2
-  //Write_1621(6,num[3]);  //3
-  //Write_1621(8,num[4]);  //4
-  //Write_1621(10,num[5]); //第5
-
-
-  Write_1621(2,0x79);  //0
-
   
 }
  
 void loop() {
-  // put your main code here, to run repeatedly:
- 
+
+
+
+vala = analogRead(analogPin1);  // read the input pin
+tset(vala); 
+delay(200); 
+
+
+valb = analogRead(analogPin2);  // read the input pin
+tmeas(valb); 
+delay(200); 
+  
 }
+
+
+
+
+void tset(int stemp){
+
+                            int hunds = (stemp%100);
+                                hunds = (stemp-hunds)/100;
+                            int oness=stemp-(hunds*100);
+                                oness=(oness%10);
+                            int tenns=(stemp%10);
+                                tenns=(stemp-tenns)/10;
+                                tenns=tenns%10;
+
+                            Write_1621(addreses[8], numbers[10]);  //0
+                            Write_1621(addreses[8], numbers[oness]);  //0
+                            Write_1621(addreses[7], numbers[10]);  //0
+                            Write_1621(addreses[7], numbers[tenns]);  //0
+                            Write_1621(addreses[6], numbers[10]);  //0
+                            Write_1621(addreses[6], numbers[hunds]);  //0
+                      }
+
+
+ void tmeas(int stemp){
+
+                            int hunds = (stemp%100);
+                                hunds = (stemp-hunds)/100;
+                            int oness=stemp-(hunds*100);
+                                oness=(oness%10);
+                            int tenns=(stemp%10);
+                                tenns=(stemp-tenns)/10;
+                                tenns=tenns%10;
+
+                            Write_1621(addreses[3], numbers[10]);  //0
+                            Write_1621(addreses[3], numbers[oness]);  //0
+                            Write_1621(addreses[2], numbers[10]);  //0
+                            Write_1621(addreses[2], numbers[tenns]);  //0
+                            Write_1621(addreses[1], numbers[10]);  //0
+                            Write_1621(addreses[1], numbers[hunds]);  //0
+                      }
